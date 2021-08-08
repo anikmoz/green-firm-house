@@ -22,10 +22,6 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string; cu
   const updating = useAppSelector(state => state.customerBought.updating);
   const updateSuccess = useAppSelector(state => state.customerBought.updateSuccess);
 
-  const handleClose = () => {
-    props.history.push('/customer-bought' + props.location.search);
-  };
-
   useEffect(() => {
     if (isNew) {
       dispatch(reset());
@@ -42,6 +38,10 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string; cu
   }, []);
 
   const customerEntity = useAppSelector(state => state.customer.entity);
+
+  const handleClose = () => {
+    props.history.push(`/customer/${customerEntity.id}` + props.location.search);
+  };
 
   useEffect(() => {
     if (updateSuccess) {
