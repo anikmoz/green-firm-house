@@ -1,80 +1,116 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
 import { Button, Col, Row, Table } from 'reactstrap';
-// tslint:disable-next-line:no-unused-variable
-import { ICrudGetAllAction, getSortState, IPaginationBaseState, getPaginationItemsNumber, JhiPagination } from 'react-jhipster';
+import { Translate, getSortState, JhiPagination, JhiItemCount } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import { IRootState } from 'app/shared/reducers';
 import { getEntities } from './customer.reducer';
 import { ICustomer } from 'app/shared/model/customer.model';
-// tslint:disable-next-line:no-unused-variable
 import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
-import { ITEMS_PER_PAGE } from 'app/shared/util/pagination.constants';
+import { ASC, DESC, ITEMS_PER_PAGE, SORT } from 'app/shared/util/pagination.constants';
+import { overridePaginationStateWithQueryParams } from 'app/shared/util/entity-utils';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-export interface ICustomerProps extends StateProps, DispatchProps, RouteComponentProps<{ url: string }> {}
+export const Customer = (props: RouteComponentProps<{ url: string }>) => {
+  const dispatch = useAppDispatch();
 
-export type ICustomerState = IPaginationBaseState;
+  const [paginationState, setPaginationState] = useState(
+    overridePaginationStateWithQueryParams(getSortState(props.location, ITEMS_PER_PAGE, 'id'), props.location.search)
+  );
 
-export class Customer extends React.Component<ICustomerProps, ICustomerState> {
-  state: ICustomerState = {
-    ...getSortState(this.props.location, ITEMS_PER_PAGE)
-  };
+  const customerList = useAppSelector(state => state.customer.entities);
+  const loading = useAppSelector(state => state.customer.loading);
+  const totalItems = useAppSelector(state => state.customer.totalItems);
 
-  componentDidMount() {
-    this.getEntities();
-  }
-
-  sort = prop => () => {
-    this.setState(
-      {
-        order: this.state.order === 'asc' ? 'desc' : 'asc',
-        sort: prop
-      },
-      () => this.sortEntities()
+  const getAllEntities = () => {
+    dispatch(
+      getEntities({
+        page: paginationState.activePage - 1,
+        size: paginationState.itemsPerPage,
+        sort: `${paginationState.sort},${paginationState.order}`,
+      })
     );
   };
 
-  sortEntities() {
-    this.getEntities();
-    this.props.history.push(`${this.props.location.pathname}?page=${this.state.activePage}&sort=${this.state.sort},${this.state.order}`);
-  }
-
-  handlePagination = activePage => this.setState({ activePage }, () => this.sortEntities());
-
-  getEntities = () => {
-    const { activePage, itemsPerPage, sort, order } = this.state;
-    this.props.getEntities(activePage - 1, itemsPerPage, `${sort},${order}`);
+  const sortEntities = () => {
+    getAllEntities();
+    const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
+    if (props.location.search !== endURL) {
+      props.history.push(`${props.location.pathname}${endURL}`);
+    }
   };
 
-  render() {
-    const { customerList, match, totalItems } = this.props;
-    return (
-      <div>
-        <h2 id="customer-heading">
-          Customers
-          <Link to={`${match.url}/new`} className="btn btn-primary float-right jh-create-entity" id="jh-create-entity">
-            <FontAwesomeIcon icon="plus" />&nbsp; Create new Customer
+  useEffect(() => {
+    sortEntities();
+  }, [paginationState.activePage, paginationState.order, paginationState.sort]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(props.location.search);
+    const page = params.get('page');
+    const sort = params.get(SORT);
+    if (page && sort) {
+      const sortSplit = sort.split(',');
+      setPaginationState({
+        ...paginationState,
+        activePage: +page,
+        sort: sortSplit[0],
+        order: sortSplit[1],
+      });
+    }
+  }, [props.location.search]);
+
+  const sort = p => () => {
+    setPaginationState({
+      ...paginationState,
+      order: paginationState.order === ASC ? DESC : ASC,
+      sort: p,
+    });
+  };
+
+  const handlePagination = currentPage =>
+    setPaginationState({
+      ...paginationState,
+      activePage: currentPage,
+    });
+
+  const handleSyncList = () => {
+    sortEntities();
+  };
+
+  const { match } = props;
+
+  return (
+    <div>
+      <h2 id="customer-heading" data-cy="CustomerHeading">
+        Customers
+        <div className="d-flex justify-content-end">
+          <Button className="mr-2" color="info" onClick={handleSyncList} disabled={loading}>
+            <FontAwesomeIcon icon="sync" spin={loading} /> Refresh List
+          </Button>
+          <Link to={`${match.url}/new`} className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
+            <FontAwesomeIcon icon="plus" />
+            &nbsp; Create new Customer
           </Link>
-        </h2>
-        <div className="table-responsive">
+        </div>
+      </h2>
+      <div className="table-responsive">
+        {customerList && customerList.length > 0 ? (
           <Table responsive>
             <thead>
               <tr>
-                <th className="hand" onClick={this.sort('id')}>
+                <th className="hand" onClick={sort('id')}>
                   ID <FontAwesomeIcon icon="sort" />
                 </th>
-                <th className="hand" onClick={this.sort('name')}>
+                <th className="hand" onClick={sort('name')}>
                   Name <FontAwesomeIcon icon="sort" />
                 </th>
-                <th className="hand" onClick={this.sort('email')}>
+                <th className="hand" onClick={sort('email')}>
                   Email <FontAwesomeIcon icon="sort" />
                 </th>
-                <th className="hand" onClick={this.sort('phone')}>
+                <th className="hand" onClick={sort('phone')}>
                   Phone <FontAwesomeIcon icon="sort" />
                 </th>
-                <th className="hand" onClick={this.sort('address')}>
+                <th className="hand" onClick={sort('address')}>
                   Address <FontAwesomeIcon icon="sort" />
                 </th>
                 <th />
@@ -82,7 +118,7 @@ export class Customer extends React.Component<ICustomerProps, ICustomerState> {
             </thead>
             <tbody>
               {customerList.map((customer, i) => (
-                <tr key={`entity-${i}`}>
+                <tr key={`entity-${i}`} data-cy="entityTable">
                   <td>
                     <Button tag={Link} to={`${match.url}/${customer.id}`} color="link" size="sm">
                       {customer.id}
@@ -94,13 +130,25 @@ export class Customer extends React.Component<ICustomerProps, ICustomerState> {
                   <td>{customer.address}</td>
                   <td className="text-right">
                     <div className="btn-group flex-btn-group-container">
-                      <Button tag={Link} to={`${match.url}/${customer.id}`} color="info" size="sm">
+                      <Button tag={Link} to={`${match.url}/${customer.id}`} color="info" size="sm" data-cy="entityDetailsButton">
                         <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">View</span>
                       </Button>
-                      <Button tag={Link} to={`${match.url}/${customer.id}/edit`} color="primary" size="sm">
+                      <Button
+                        tag={Link}
+                        to={`${match.url}/${customer.id}/edit?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        color="primary"
+                        size="sm"
+                        data-cy="entityEditButton"
+                      >
                         <FontAwesomeIcon icon="pencil-alt" /> <span className="d-none d-md-inline">Edit</span>
                       </Button>
-                      <Button tag={Link} to={`${match.url}/${customer.id}/delete`} color="danger" size="sm">
+                      <Button
+                        tag={Link}
+                        to={`${match.url}/${customer.id}/delete?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`}
+                        color="danger"
+                        size="sm"
+                        data-cy="entityDeleteButton"
+                      >
                         <FontAwesomeIcon icon="trash" /> <span className="d-none d-md-inline">Delete</span>
                       </Button>
                     </div>
@@ -109,33 +157,30 @@ export class Customer extends React.Component<ICustomerProps, ICustomerState> {
               ))}
             </tbody>
           </Table>
-        </div>
-        <Row className="justify-content-center">
-          <JhiPagination
-            items={getPaginationItemsNumber(totalItems, this.state.itemsPerPage)}
-            activePage={this.state.activePage}
-            onSelect={this.handlePagination}
-            maxButtons={5}
-          />
-        </Row>
+        ) : (
+          !loading && <div className="alert alert-warning">No Customers found</div>
+        )}
       </div>
-    );
-  }
-}
-
-const mapStateToProps = ({ customer }: IRootState) => ({
-  customerList: customer.entities,
-  totalItems: customer.totalItems
-});
-
-const mapDispatchToProps = {
-  getEntities
+      {totalItems ? (
+        <div className={customerList && customerList.length > 0 ? '' : 'd-none'}>
+          <Row className="justify-content-center">
+            <JhiItemCount page={paginationState.activePage} total={totalItems} itemsPerPage={paginationState.itemsPerPage} />
+          </Row>
+          <Row className="justify-content-center">
+            <JhiPagination
+              activePage={paginationState.activePage}
+              onSelect={handlePagination}
+              maxButtons={5}
+              itemsPerPage={paginationState.itemsPerPage}
+              totalItems={totalItems}
+            />
+          </Row>
+        </div>
+      ) : (
+        ''
+      )}
+    </div>
+  );
 };
 
-type StateProps = ReturnType<typeof mapStateToProps>;
-type DispatchProps = typeof mapDispatchToProps;
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Customer);
+export default Customer;

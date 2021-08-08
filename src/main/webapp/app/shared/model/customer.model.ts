@@ -1,7 +1,7 @@
 export interface ICustomer {
   id?: number;
   name?: string;
-  email?: string;
+  email?: string | null;
   phone?: string;
   address?: string;
 }

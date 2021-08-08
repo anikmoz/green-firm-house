@@ -1,170 +1,126 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useEffect } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, Row, Col, Label } from 'reactstrap';
-import { AvForm, AvGroup, AvInput, AvField } from 'availity-reactstrap-validation';
-// tslint:disable-next-line:no-unused-variable
-import { ICrudGetAction, ICrudGetAllAction, ICrudPutAction } from 'react-jhipster';
+import { Button, Row, Col, FormText } from 'reactstrap';
+import { isNumber, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IRootState } from 'app/shared/reducers';
 
 import { getEntity, updateEntity, createEntity, reset } from './customer.reducer';
 import { ICustomer } from 'app/shared/model/customer.model';
-// tslint:disable-next-line:no-unused-variable
-import { convertDateTimeFromServer, convertDateTimeToServer } from 'app/shared/util/date-utils';
+import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
 import { mapIdList } from 'app/shared/util/entity-utils';
+import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-export interface ICustomerUpdateProps extends StateProps, DispatchProps, RouteComponentProps<{ id: string }> {}
+export const CustomerUpdate = (props: RouteComponentProps<{ id: string }>) => {
+  const dispatch = useAppDispatch();
 
-export interface ICustomerUpdateState {
-  isNew: boolean;
-}
+  const [isNew] = useState(!props.match.params || !props.match.params.id);
 
-export class CustomerUpdate extends React.Component<ICustomerUpdateProps, ICustomerUpdateState> {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isNew: !this.props.match.params || !this.props.match.params.id
-    };
-  }
+  const customerEntity = useAppSelector(state => state.customer.entity);
+  const loading = useAppSelector(state => state.customer.loading);
+  const updating = useAppSelector(state => state.customer.updating);
+  const updateSuccess = useAppSelector(state => state.customer.updateSuccess);
 
-  componentWillUpdate(nextProps, nextState) {
-    if (nextProps.updateSuccess !== this.props.updateSuccess && nextProps.updateSuccess) {
-      this.handleClose();
-    }
-  }
+  const handleClose = () => {
+    props.history.push('/customer' + props.location.search);
+  };
 
-  componentDidMount() {
-    if (this.state.isNew) {
-      this.props.reset();
+  useEffect(() => {
+    if (isNew) {
+      dispatch(reset());
     } else {
-      this.props.getEntity(this.props.match.params.id);
+      dispatch(getEntity(props.match.params.id));
     }
-  }
+  }, []);
 
-  saveEntity = (event, errors, values) => {
-    if (errors.length === 0) {
-      const { customerEntity } = this.props;
-      const entity = {
-        ...customerEntity,
-        ...values
-      };
+  useEffect(() => {
+    if (updateSuccess) {
+      handleClose();
+    }
+  }, [updateSuccess]);
 
-      if (this.state.isNew) {
-        this.props.createEntity(entity);
-      } else {
-        this.props.updateEntity(entity);
-      }
+  const saveEntity = values => {
+    const entity = {
+      ...customerEntity,
+      ...values,
+    };
+
+    if (isNew) {
+      dispatch(createEntity(entity));
+    } else {
+      dispatch(updateEntity(entity));
     }
   };
 
-  handleClose = () => {
-    this.props.history.push('/entity/customer');
-  };
+  const defaultValues = () =>
+    isNew
+      ? {}
+      : {
+          ...customerEntity,
+        };
 
-  render() {
-    const { customerEntity, loading, updating } = this.props;
-    const { isNew } = this.state;
-
-    return (
-      <div>
-        <Row className="justify-content-center">
-          <Col md="8">
-            <h2 id="greenFirmHouseApp.customer.home.createOrEditLabel">Create or edit a Customer</h2>
-          </Col>
-        </Row>
-        <Row className="justify-content-center">
-          <Col md="8">
-            {loading ? (
-              <p>Loading...</p>
-            ) : (
-              <AvForm model={isNew ? {} : customerEntity} onSubmit={this.saveEntity}>
-                {!isNew ? (
-                  <AvGroup>
-                    <Label for="id">ID</Label>
-                    <AvInput id="customer-id" type="text" className="form-control" name="id" required readOnly />
-                  </AvGroup>
-                ) : null}
-                <AvGroup>
-                  <Label id="nameLabel" for="name">
-                    Name
-                  </Label>
-                  <AvField
-                    id="customer-name"
-                    type="text"
-                    name="name"
-                    validate={{
-                      required: { value: true, errorMessage: 'This field is required.' }
-                    }}
-                  />
-                </AvGroup>
-                <AvGroup>
-                  <Label id="emailLabel" for="email">
-                    Email
-                  </Label>
-                  <AvField id="customer-email" type="text" name="email" />
-                </AvGroup>
-                <AvGroup>
-                  <Label id="phoneLabel" for="phone">
-                    Phone
-                  </Label>
-                  <AvField
-                    id="customer-phone"
-                    type="text"
-                    name="phone"
-                    validate={{
-                      required: { value: true, errorMessage: 'This field is required.' }
-                    }}
-                  />
-                </AvGroup>
-                <AvGroup>
-                  <Label id="addressLabel" for="address">
-                    Address
-                  </Label>
-                  <AvField
-                    id="customer-address"
-                    type="text"
-                    name="address"
-                    validate={{
-                      required: { value: true, errorMessage: 'This field is required.' }
-                    }}
-                  />
-                </AvGroup>
-                <Button tag={Link} id="cancel-save" to="/entity/customer" replace color="info">
-                  <FontAwesomeIcon icon="arrow-left" />&nbsp;
-                  <span className="d-none d-md-inline">Back</span>
-                </Button>
+  return (
+    <div>
+      <Row className="justify-content-center">
+        <Col md="8">
+          <h2 id="greenFirmHouseApp.customer.home.createOrEditLabel" data-cy="CustomerCreateUpdateHeading">
+            Create or edit a Customer
+          </h2>
+        </Col>
+      </Row>
+      <Row className="justify-content-center">
+        <Col md="8">
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
+              {!isNew ? <ValidatedField name="id" required readOnly id="customer-id" label="ID" validate={{ required: true }} /> : null}
+              <ValidatedField
+                label="Name"
+                id="customer-name"
+                name="name"
+                data-cy="name"
+                type="text"
+                validate={{
+                  required: { value: true, message: 'This field is required.' },
+                }}
+              />
+              <ValidatedField label="Email" id="customer-email" name="email" data-cy="email" type="text" />
+              <ValidatedField
+                label="Phone"
+                id="customer-phone"
+                name="phone"
+                data-cy="phone"
+                type="text"
+                validate={{
+                  required: { value: true, message: 'This field is required.' },
+                }}
+              />
+              <ValidatedField
+                label="Address"
+                id="customer-address"
+                name="address"
+                data-cy="address"
+                type="text"
+                validate={{
+                  required: { value: true, message: 'This field is required.' },
+                }}
+              />
+              <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/customer" replace color="info">
+                <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;
-                <Button color="primary" id="save-entity" type="submit" disabled={updating}>
-                  <FontAwesomeIcon icon="save" />&nbsp; Save
-                </Button>
-              </AvForm>
-            )}
-          </Col>
-        </Row>
-      </div>
-    );
-  }
-}
-
-const mapStateToProps = (storeState: IRootState) => ({
-  customerEntity: storeState.customer.entity,
-  loading: storeState.customer.loading,
-  updating: storeState.customer.updating,
-  updateSuccess: storeState.customer.updateSuccess
-});
-
-const mapDispatchToProps = {
-  getEntity,
-  updateEntity,
-  createEntity,
-  reset
+                <span className="d-none d-md-inline">Back</span>
+              </Button>
+              &nbsp;
+              <Button color="primary" id="save-entity" data-cy="entityCreateSaveButton" type="submit" disabled={updating}>
+                <FontAwesomeIcon icon="save" />
+                &nbsp; Save
+              </Button>
+            </ValidatedForm>
+          )}
+        </Col>
+      </Row>
+    </div>
+  );
 };
 
-type StateProps = ReturnType<typeof mapStateToProps>;
-type DispatchProps = typeof mapDispatchToProps;
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(CustomerUpdate);
+export default CustomerUpdate;

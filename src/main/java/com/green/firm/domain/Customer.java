@@ -1,12 +1,8 @@
 package com.green.firm.domain;
 
-
-
+import java.io.Serializable;
 import javax.persistence.*;
 import javax.validation.constraints.*;
-
-import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * A Customer.
@@ -16,7 +12,7 @@ import java.util.Objects;
 public class Customer implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -36,7 +32,7 @@ public class Customer implements Serializable {
     @Column(name = "address", nullable = false)
     private String address;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
+    // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
         return id;
     }
@@ -45,8 +41,13 @@ public class Customer implements Serializable {
         this.id = id;
     }
 
+    public Customer id(Long id) {
+        this.id = id;
+        return this;
+    }
+
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public Customer name(String name) {
@@ -59,7 +60,7 @@ public class Customer implements Serializable {
     }
 
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     public Customer email(String email) {
@@ -72,7 +73,7 @@ public class Customer implements Serializable {
     }
 
     public String getPhone() {
-        return phone;
+        return this.phone;
     }
 
     public Customer phone(String phone) {
@@ -85,7 +86,7 @@ public class Customer implements Serializable {
     }
 
     public String getAddress() {
-        return address;
+        return this.address;
     }
 
     public Customer address(String address) {
@@ -96,28 +97,27 @@ public class Customer implements Serializable {
     public void setAddress(String address) {
         this.address = address;
     }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
+
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof Customer)) {
             return false;
         }
-        Customer customer = (Customer) o;
-        if (customer.getId() == null || getId() == null) {
-            return false;
-        }
-        return Objects.equals(getId(), customer.getId());
+        return id != null && id.equals(((Customer) o).id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getId());
+        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        return getClass().hashCode();
     }
 
+    // prettier-ignore
     @Override
     public String toString() {
         return "Customer{" +
