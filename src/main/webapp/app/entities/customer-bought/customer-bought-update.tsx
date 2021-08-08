@@ -1,20 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, Row, Col, FormText } from 'reactstrap';
+import { Button, Col, FormText, Row } from 'reactstrap';
 import { isNumber, ValidatedField, ValidatedForm } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-import { IProductType } from 'app/shared/model/product-type.model';
 import { getEntities as getProductTypes } from 'app/entities/product-type/product-type.reducer';
-import { ICustomer } from 'app/shared/model/customer.model';
 import { getEntities as getCustomers } from 'app/entities/customer/customer.reducer';
-import { getEntity, updateEntity, createEntity, reset } from './customer-bought.reducer';
-import { ICustomerBought } from 'app/shared/model/customer-bought.model';
+import { createEntity, getEntity, reset, updateEntity } from './customer-bought.reducer';
+import { getEntity as getCustomer } from '../customer/customer.reducer';
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
-import { mapIdList } from 'app/shared/util/entity-utils';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 
-export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string }>) => {
+export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string; customerId: string }>) => {
   const dispatch = useAppDispatch();
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
@@ -34,12 +30,18 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string }>)
     if (isNew) {
       dispatch(reset());
     } else {
-      dispatch(getEntity(props.match.params.id));
+      if (props.match.params.id !== null && props.match.params.id !== 'null') {
+        dispatch(getEntity(props.match.params.id));
+      }
     }
+
+    dispatch(getCustomer(props.match.params.customerId));
 
     dispatch(getProductTypes({}));
     dispatch(getCustomers({}));
   }, []);
+
+  const customerEntity = useAppSelector(state => state.customer.entity);
 
   useEffect(() => {
     if (updateSuccess) {
@@ -48,16 +50,14 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string }>)
   }, [updateSuccess]);
 
   const saveEntity = values => {
-    values.deliveryDate = convertDateTimeToServer(values.deliveryDate);
-
     const entity = {
       ...customerBoughtEntity,
       ...values,
       productType: productTypes.find(it => it.id.toString() === values.productTypeId.toString()),
       customer: customers.find(it => it.id.toString() === values.customerId.toString()),
+      deliveryDate: convertDateTimeToServer(new Date()),
     };
-
-    if (isNew) {
+    if (isNew || props.match.params.id == null || props.match.params.id == 'null') {
       dispatch(createEntity(entity));
     } else {
       dispatch(updateEntity(entity));
@@ -75,7 +75,7 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string }>)
           deliveryDate: convertDateTimeFromServer(customerBoughtEntity.deliveryDate),
           status: 'DUE',
           productTypeId: customerBoughtEntity?.productType?.id,
-          customerId: customerBoughtEntity?.customer?.id,
+          customerId: customerBoughtEntity?.customer?.id || customerEntity?.id,
         };
 
   return (
@@ -93,9 +93,10 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string }>)
             <p>Loading...</p>
           ) : (
             <ValidatedForm defaultValues={defaultValues()} onSubmit={saveEntity}>
-              {!isNew ? (
-                <ValidatedField name="id" required readOnly id="customer-bought-id" label="ID" validate={{ required: true }} />
-              ) : null}
+              {/*{!isNew ? (*/}
+              {/*  <ValidatedField name="id" required readOnly id="customer-bought-id" label="ID"*/}
+              {/*                  validate={{required: true}}/>*/}
+              {/*) : null}*/}
               <ValidatedField
                 id="customer-bought-productType"
                 name="productTypeId"
@@ -156,7 +157,7 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string }>)
                 <option value="DUE">DUE</option>
                 <option value="PAID">PAID</option>
               </ValidatedField>
-              <ValidatedField
+              {/*<ValidatedField
                 label="Delivery Date"
                 id="customer-bought-deliveryDate"
                 name="deliveryDate"
@@ -164,21 +165,22 @@ export const CustomerBoughtUpdate = (props: RouteComponentProps<{ id: string }>)
                 type="datetime-local"
                 placeholder="YYYY-MM-DD HH:mm"
                 validate={{
-                  required: { value: true, message: 'This field is required.' },
+                  required: {value: true, message: 'This field is required.'},
                 }}
-              />
+              />*/}
               <ValidatedField label="Remarks" id="customer-bought-remarks" name="remarks" data-cy="remarks" type="text" />
-              <ValidatedField id="customer-bought-customer" name="customerId" data-cy="customer" label="Customer" type="select" required>
-                <option value="" key="0" />
+              {/*<ValidatedField id="customer-bought-customer" name="customerId" data-cy="customer" label="Customer"
+                              type="select" required>
+                <option value="" key="0"/>
                 {customers
                   ? customers.map(otherEntity => (
-                      <option value={otherEntity.id} key={otherEntity.id}>
-                        {otherEntity.name}
-                      </option>
-                    ))
+                    <option value={otherEntity.id} key={otherEntity.id}>
+                      {otherEntity.name}
+                    </option>
+                  ))
                   : null}
               </ValidatedField>
-              <FormText>This field is required.</FormText>
+              <FormText>This field is required.</FormText>*/}
               <Button tag={Link} id="cancel-save" data-cy="entityCreateCancelButton" to="/customer-bought" replace color="info">
                 <FontAwesomeIcon icon="arrow-left" />
                 &nbsp;

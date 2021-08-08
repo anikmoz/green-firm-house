@@ -142,7 +142,12 @@ export const CustomerDetail = (props: RouteComponentProps<{ id: string }>) => {
               <Button className="mr-2" color="info" onClick={handleSyncList} disabled={loading}>
                 <FontAwesomeIcon icon="sync" spin={loading} /> Refresh List
               </Button>
-              <Link to={`${match.url}/new`} className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
+              <Link
+                to={`/customer-bought/${null}/edit/${customerEntity.id}`}
+                className="btn btn-primary jh-create-entity"
+                id="jh-create-entity"
+                data-cy="entityCreateButton"
+              >
                 <FontAwesomeIcon icon="plus" />
                 &nbsp; Create new Customer Bought
               </Link>
