@@ -153,8 +153,11 @@ export const CustomerDetail = (props: RouteComponentProps<{ id: string }>) => {
               <Table responsive>
                 <thead>
                   <tr>
-                    <th className="hand" onClick={sort('id')}>
-                      ID <FontAwesomeIcon icon="sort" />
+                    <th className="hand" onClick={sort('deliveryDate')}>
+                      Delivery Date <FontAwesomeIcon icon="sort" />
+                    </th>
+                    <th>
+                      Product Type <FontAwesomeIcon icon="sort" />
                     </th>
                     <th className="hand" onClick={sort('weightType')}>
                       Weight Type <FontAwesomeIcon icon="sort" />
@@ -162,27 +165,20 @@ export const CustomerDetail = (props: RouteComponentProps<{ id: string }>) => {
                     <th className="hand" onClick={sort('unitPrice')}>
                       Unit Price <FontAwesomeIcon icon="sort" />
                     </th>
+                    <th className="hand" onClick={sort('totalWeight')}>
+                      Total Weight <FontAwesomeIcon icon="sort" />
+                    </th>
                     <th className="hand" onClick={sort('totalPrice')}>
                       Total Price <FontAwesomeIcon icon="sort" />
                     </th>
-                    <th className="hand" onClick={sort('deliveryDate')}>
-                      Delivery Date <FontAwesomeIcon icon="sort" />
-                    </th>
+
                     <th className="hand" onClick={sort('remarks')}>
                       Remarks <FontAwesomeIcon icon="sort" />
                     </th>
                     <th className="hand" onClick={sort('status')}>
                       Status <FontAwesomeIcon icon="sort" />
                     </th>
-                    <th className="hand" onClick={sort('totalWeight')}>
-                      Total Weight <FontAwesomeIcon icon="sort" />
-                    </th>
-                    <th>
-                      Product Type <FontAwesomeIcon icon="sort" />
-                    </th>
-                    <th>
-                      Customer <FontAwesomeIcon icon="sort" />
-                    </th>
+
                     <th />
                   </tr>
                 </thead>
@@ -190,21 +186,10 @@ export const CustomerDetail = (props: RouteComponentProps<{ id: string }>) => {
                   {customerBoughtList.map((customerBought, i) => (
                     <tr key={`entity-${i}`} data-cy="entityTable">
                       <td>
-                        <Button tag={Link} to={`${match.url}/${customerBought.id}`} color="link" size="sm">
-                          {customerBought.id}
-                        </Button>
-                      </td>
-                      <td>{customerBought.weightType}</td>
-                      <td>{customerBought.unitPrice}</td>
-                      <td>{customerBought.totalPrice}</td>
-                      <td>
                         {customerBought.deliveryDate ? (
                           <TextFormat type="date" value={customerBought.deliveryDate} format={APP_DATE_FORMAT} />
                         ) : null}
                       </td>
-                      <td>{customerBought.remarks}</td>
-                      <td>{customerBought.status}</td>
-                      <td>{customerBought.totalWeight}</td>
                       <td>
                         {customerBought.productType ? (
                           <Link to={`product-type/${customerBought.productType.id}`}>{customerBought.productType.name}</Link>
@@ -212,13 +197,12 @@ export const CustomerDetail = (props: RouteComponentProps<{ id: string }>) => {
                           ''
                         )}
                       </td>
-                      <td>
-                        {customerBought.customer ? (
-                          <Link to={`customer/${customerBought.customer.id}`}>{customerBought.customer.name}</Link>
-                        ) : (
-                          ''
-                        )}
-                      </td>
+                      <td>{customerBought.weightType}</td>
+                      <td>{customerBought.unitPrice}</td>
+                      <td>{customerBought.totalWeight}</td>
+                      <td>{customerBought.totalPrice}</td>
+                      <td>{customerBought.remarks}</td>
+                      <td>{customerBought.status}</td>
                       <td className="text-right">
                         <div className="btn-group flex-btn-group-container">
                           <Button tag={Link} to={`${match.url}/${customerBought.id}`} color="info" size="sm" data-cy="entityDetailsButton">
