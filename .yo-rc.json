@@ -44,6 +44,7 @@
     "clientTheme": "none",
     "clientThemeVariant": "",
     "reactive": false,
-    "entities": ["Customer"]
+    "entities": ["Customer", "ProductType", "CustomerBought"],
+    "lastLiquibaseTimestamp": 1628442763000
   }
 }

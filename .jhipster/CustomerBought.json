@@ -1,0 +1,61 @@
+{
+  "fields": [
+    {
+      "fieldName": "weightType",
+      "fieldType": "weightTypes",
+      "fieldValues": "LITTRE,KG,GRAM",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "unitPrice",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "totalPrice",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "deliveryDate",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "remarks",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "paymentStatus",
+      "fieldValues": "DUE,PAID",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "totalWeight",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "productType",
+      "otherEntityName": "productType",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": ["required"],
+      "otherEntityField": "name"
+    },
+    {
+      "relationshipName": "customer",
+      "otherEntityName": "customer",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": ["required"],
+      "otherEntityField": "name"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "pagination",
+  "name": "CustomerBought",
+  "changelogDate": "20210808171243"
+}

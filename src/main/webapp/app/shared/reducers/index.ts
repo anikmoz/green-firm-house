@@ -11,11 +11,11 @@ import password, { PasswordState } from 'app/modules/account/password/password.r
 import settings, { SettingsState } from 'app/modules/account/settings/settings.reducer';
 import passwordReset, { PasswordResetState } from 'app/modules/account/password-reset/password-reset.reducer';
 // prettier-ignore
-import customer, {
-  CustomerState
-} from 'app/entities/customer/customer.reducer';
-// prettier-ignore
 import customer from 'app/entities/customer/customer.reducer';
+// prettier-ignore
+import productType from 'app/entities/product-type/product-type.reducer';
+// prettier-ignore
+import customerBought from 'app/entities/customer-bought/customer-bought.reducer';
 /* jhipster-needle-add-reducer-import - JHipster will add reducer here */
 
 const rootReducer = {
@@ -29,6 +29,8 @@ const rootReducer = {
   password,
   settings,
   customer,
+  productType,
+  customerBought,
   /* jhipster-needle-add-reducer-combine - JHipster will add reducer here */
   loadingBar,
 };
